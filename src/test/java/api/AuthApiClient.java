@@ -33,7 +33,7 @@ public class AuthApiClient {
     }
 
     @Step("[API] Sending request with empty refresh parameter POST /auth/token/")
-    public WithoutRefreshTokenLoginResponseModel loginEmptyRefreshToken(LoginBodyModel loginBody) {
+    public WithoutRefreshTokenLoginResponseModel loginEmptyRefreshToken(WithoutRefreshTokenLoginBodyModel loginBody) {
         return given(baseRequestSpec)
                 .body(loginBody)
                 .when()
@@ -44,7 +44,7 @@ public class AuthApiClient {
     }
 
     @Step("[API] Sending request with wrong refresh parameter POST /auth/token/")
-    public WrongRefreshTokenResponseModel loginWrongRefreshToken(LoginBodyModel loginBody) {
+    public WrongRefreshTokenResponseModel loginWrongRefreshToken(InvalidRefreshTokenBodyModel loginBody) {
         return given(baseRequestSpec)
                 .body(loginBody)
                 .when()
