@@ -21,6 +21,18 @@ public class AuthApiClient {
                 .extract().as(SuccessfulLoginResponseModel.class);
     }
 
+    @Step("[API] Authorization and get token")
+    public String loginAndGetRefreshToken(LoginBodyModel loginBody) {
+        return given(baseRequestSpec)
+                .body(loginBody)
+                .when()
+                .post("/auth/token/")
+                .then()
+                .spec(successfulLoginResponseSpec)
+                .extract()
+                .path("access");
+    }
+
     @Step("[API] Authorization with an incorrect username POST /auth/token/")
     public WrongCredentialsLoginResponseModel loginWrongCredentials(LoginBodyModel loginBody) {
         return given(baseRequestSpec)

@@ -1,10 +1,7 @@
 package api;
 
 import io.qameta.allure.Step;
-import models.user_update.IncorrectPartialUpdateUserResponseModel;
-import models.user_update.SuccessfulUpdateUserResponseModel;
-import models.user_update.UnauthorizedResponseModel;
-import models.user_update.UpdateUserBodyModel;
+import models.user_update.*;
 
 import static io.restassured.RestAssured.given;
 import static specs.BaseSpec.baseRequestSpec;
@@ -13,7 +10,7 @@ import static specs.user_update.UpdateUserSpec.*;
 public class UserUpdateApiClient {
 
     @Step("[API] Full update of user data PUT /users/me/")
-    public SuccessfulUpdateUserResponseModel updateFull (
+    public SuccessfulUpdateUserResponseModel updatePut (
             UpdateUserBodyModel updateBody,
             String accessToken
     ) {
@@ -29,8 +26,40 @@ public class UserUpdateApiClient {
     }
 
     @Step("[API] Full update of user data PATCH /users/me/")
-    public IncorrectPartialUpdateUserResponseModel updateIncorrectPartial(
+    public SuccessfulUpdateUserResponseModel updatePatchFull (
             UpdateUserBodyModel updateBody,
+            String accessToken
+    ) {
+        return given(baseRequestSpec)
+                .header("Authorization", "Bearer " + accessToken)
+                .body(updateBody)
+                .when()
+                .patch("/users/me/")
+                .then()
+                .spec(successfulUpdateUserResponseSpec)
+                .extract()
+                .as(SuccessfulUpdateUserResponseModel.class);
+    }
+
+    @Step("[API] Partial update of user data PATCH /users/me/")
+    public SuccessfulUpdateUserResponseModel updatePatchPartial (
+            PartialUpdateUserBodyModel updateBody,
+            String accessToken
+    ) {
+        return given(baseRequestSpec)
+                .header("Authorization", "Bearer " + accessToken)
+                .body(updateBody)
+                .when()
+                .patch("/users/me/")
+                .then()
+                .spec(successfulUpdateUserResponseSpec)
+                .extract()
+                .as(SuccessfulUpdateUserResponseModel.class);
+    }
+
+    @Step("[API] Partial update of user data PUT /users/me/")
+    public IncorrectPartialUpdateUserResponseModel updateIncorrectPartial(
+            PartialUpdateUserBodyModel updateBody,
             String accessToken
     ) {
         return given(baseRequestSpec)

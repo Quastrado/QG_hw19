@@ -6,61 +6,31 @@ import models.user_update.SuccessfulUpdateUserResponseModel;
 import models.user_update.*;
 import org.junit.jupiter.api.Test;
 import tests.testdata.TestDataBookClub;
-
 import static io.qameta.allure.Allure.step;
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static specs.BaseSpec.baseRequestSpec;
-import static specs.login.LoginSpec.successfulLoginResponseSpec;
-import static specs.registration.RegistrationSpec.successfulRegistrationResponseSpec;
-import static specs.user_update.UpdateUserSpec.*;
 
 public class UpdateUserTest extends TestBase{
     TestDataBookClub testData = new TestDataBookClub();
 
     @Test
     public void successfulUpdateUserWithPutTest() {
-
-        step("User registration request", () -> {
-                    RegistrationBodyModel registrationData = new RegistrationBodyModel(
-                            testData.username,
-                            testData.password
-                    );
-                    given(baseRequestSpec)
-                            .body(registrationData)
-                            .when()
-                            .post("/users/register/")
-                            .then()
-                            .spec(successfulRegistrationResponseSpec);
-                });
-
-        String accessToken = step("Log in request. Get an access token", () -> {
-            LoginBodyModel dataLogin = new LoginBodyModel(testData.username, testData.password);
-            return given(baseRequestSpec)
-                    .body(dataLogin)
-                    .when()
-                    .post("/auth/token/")
-                    .then()
-                    .spec(successfulLoginResponseSpec)
-                    .extract().path("access");
-        });
+        RegistrationBodyModel registrationData = new RegistrationBodyModel(
+                testData.username,
+                testData.password
+        );
+        api.register.register(registrationData);
+        LoginBodyModel dataLogin = new LoginBodyModel(testData.username, testData.password);
+        String accessToken = api.auth.loginAndGetRefreshToken(dataLogin);
         UpdateUserBodyModel dataUpdateUser = new UpdateUserBodyModel(
                 testData.username,
                 testData.firstName,
                 testData.lastName,
                 testData.email
         );
-        SuccessfulUpdateUserResponseModel responseUpdateUser = step("Full update of user data (PUT)", () ->
-                given(baseRequestSpec)
-                        .header("Authorization", "Bearer " + accessToken)
-                        .body(dataUpdateUser)
-                        .when()
-                        .put("/users/me/")
-                        .then()
-                        .spec(successfulUpdateUserResponseSpec)
-                        .extract()
-                        .as(SuccessfulUpdateUserResponseModel.class)
-        );
+        SuccessfulUpdateUserResponseModel responseUpdateUser = api.update.updatePut(
+                dataUpdateUser,
+                accessToken
+                );
         step("Checks", () -> {
             String actualUsername = responseUpdateUser.username();
             String actualFirstName = responseUpdateUser.firstName();
@@ -78,40 +48,22 @@ public class UpdateUserTest extends TestBase{
 
     @Test
     public void successfulUpdateUserWithPatchTest() {
-        step("User registration request", () -> {
-                    RegistrationBodyModel registrationData = new RegistrationBodyModel(testData.username, testData.password);
-                    given(baseRequestSpec)
-                            .body(registrationData)
-                            .when()
-                            .post("/users/register/")
-                            .then()
-                            .spec(successfulRegistrationResponseSpec);
-        });
-        String accessToken = step("Log in request. Get an access token", () -> {
-            LoginBodyModel dataLogin = new LoginBodyModel(testData.username, testData.password);
-            return given(baseRequestSpec)
-                    .body(dataLogin)
-                    .when()
-                    .post("/auth/token/")
-                    .then()
-                    .spec(successfulLoginResponseSpec)
-                    .extract().path("access");
-        });
+        RegistrationBodyModel registrationData = new RegistrationBodyModel(
+                testData.username,
+                testData.password
+        );
+        api.register.register(registrationData);
+        LoginBodyModel dataLogin = new LoginBodyModel(testData.username, testData.password);
+        String accessToken = api.auth.loginAndGetRefreshToken(dataLogin);
         UpdateUserBodyModel dataUpdateUser = new UpdateUserBodyModel(
                 testData.username,
                 testData.firstName,
                 testData.lastName,
-                testData.email);
-        SuccessfulUpdateUserResponseModel responseUpdateUser = step("Full update of user data (PATCH)", () ->
-                given(baseRequestSpec)
-                        .header("Authorization", "Bearer " + accessToken)
-                        .body(dataUpdateUser)
-                        .when()
-                        .patch("/users/me/")
-                        .then()
-                        .spec(successfulUpdateUserResponseSpec)
-                        .extract()
-                        .as(SuccessfulUpdateUserResponseModel.class)
+                testData.email
+        );
+        SuccessfulUpdateUserResponseModel responseUpdateUser = api.update.updatePatchFull(
+                dataUpdateUser,
+                accessToken
         );
         step("Checks", () -> {
             String actualUsername = responseUpdateUser.username();
@@ -130,38 +82,18 @@ public class UpdateUserTest extends TestBase{
 
     @Test
     public void successfulPartialUpdateUserWithPatchTest() {
-        step("User registration request", () -> {
-            RegistrationBodyModel registrationData = new RegistrationBodyModel(testData.username, testData.password);
-            given(baseRequestSpec)
-                    .body(registrationData)
-                    .when()
-                    .post("/users/register/")
-                    .then()
-                    .spec(successfulRegistrationResponseSpec);
-        });
-        String accessToken = step("Log in request. Get an access token", () -> {
-            LoginBodyModel dataLogin = new LoginBodyModel(testData.username, testData.password);
-            return given(baseRequestSpec)
-                    .body(dataLogin)
-                    .when()
-                    .post("/auth/token/")
-                    .then()
-                    .spec(successfulLoginResponseSpec)
-                    .extract().path("access");
-        });
-
+        RegistrationBodyModel registrationData = new RegistrationBodyModel(
+                testData.username,
+                testData.password
+        );
+        api.register.register(registrationData);
+        LoginBodyModel dataLogin = new LoginBodyModel(testData.username, testData.password);
+        String accessToken = api.auth.loginAndGetRefreshToken(dataLogin);
         PartialUpdateUserBodyModel dataUpdateUser =
                 new PartialUpdateUserBodyModel(testData.username, testData.email);
-        SuccessfulUpdateUserResponseModel responseUpdateUser = step("Partial update of user data (PATCH)", () ->
-                given(baseRequestSpec)
-                        .header("Authorization", "Bearer " + accessToken)
-                        .body(dataUpdateUser)
-                        .when()
-                        .patch("/users/me/")
-                        .then()
-                        .spec(successfulUpdateUserResponseSpec)
-                        .extract()
-                        .as(SuccessfulUpdateUserResponseModel.class)
+        SuccessfulUpdateUserResponseModel responseUpdateUser = api.update.updatePatchPartial(
+                dataUpdateUser,
+                accessToken
         );
         step("Checks", () -> {
             String actualUsername = responseUpdateUser.username();
@@ -176,45 +108,22 @@ public class UpdateUserTest extends TestBase{
 
     @Test
     public void partialUpdateUserWithPutNegativeTest() {
-
-        step("User registration request", () -> {
-            RegistrationBodyModel registrationData = new RegistrationBodyModel(testData.username, testData.password);
-            given(baseRequestSpec)
-                    .body(registrationData)
-                    .when()
-                    .post("/users/register/")
-                    .then()
-                    .spec(successfulRegistrationResponseSpec);
-        });
-        String accessToken = step("Log in request. Get an access token", () -> {
-            LoginBodyModel dataLogin = new LoginBodyModel(testData.username, testData.password);
-            return given(baseRequestSpec)
-                    .body(dataLogin)
-                    .when()
-                    .post("/auth/token/")
-                    .then()
-                    .spec(successfulLoginResponseSpec)
-                    .extract().path("access");
-        });
-
+        RegistrationBodyModel registrationData = new RegistrationBodyModel(
+                testData.username,
+                testData.password
+        );
+        api.register.register(registrationData);
+        LoginBodyModel dataLogin = new LoginBodyModel(testData.username, testData.password);
+        String accessToken = api.auth.loginAndGetRefreshToken(dataLogin);
         PartialUpdateUserBodyModel dataUpdateUser =
                 new PartialUpdateUserBodyModel(testData.username, testData.email);
-        IncorrectPartialUpdateUserResponseModel responseUpdateUser = step(
-                "Partial update of user data using PUT", () ->
-                given(baseRequestSpec)
-                        .header("Authorization", "Bearer " + accessToken)
-                        .body(dataUpdateUser)
-                        .when()
-                        .put("/users/me/")
-                        .then()
-                        .spec(unsuccessfulPartialUpdateUserResponseSpec)
-                        .extract()
-                        .as(IncorrectPartialUpdateUserResponseModel.class)
+        IncorrectPartialUpdateUserResponseModel responseUpdateUser = api.update.updateIncorrectPartial(
+                dataUpdateUser,
+                accessToken
         );
         step("Checks", () -> {
             String actualFirstName = responseUpdateUser.firstName().get(0);
             String actualLastName = responseUpdateUser.lastName().get(0);
-
             assertThat(actualFirstName).isEqualTo(testData.requiredFieldError);
             assertThat(actualLastName).isEqualTo(testData.requiredFieldError);
             assertThat(responseUpdateUser.username()).isNull();
@@ -224,27 +133,16 @@ public class UpdateUserTest extends TestBase{
 
     @Test
     public void withoutRequiredAuthorizationHeaderUpdateUserNegativeTest() {
-
         UpdateUserBodyModel dataUpdateUser = new UpdateUserBodyModel(
                 testData.username,
                 testData.firstName,
                 testData.lastName,
                 testData.email
         );
-        UnauthorizedResponseModel responseUpdateUser = step("Update user data without authorization", () ->
-                given(baseRequestSpec)
-                        .body(dataUpdateUser)
-                        .when()
-                        .put("/users/me/")
-                        .then()
-                        .spec(unauthorizedResponseSpec)
-                        .extract()
-                        .as(UnauthorizedResponseModel.class)
-        );
+        UnauthorizedResponseModel responseUpdateUser = api.update.updateWithoutRequiredHeader(dataUpdateUser);
         step("Checks", () -> {
             String actualDetail = responseUpdateUser.detail();
             assertThat(actualDetail).isEqualTo(testData.unauthorizedError);
         });
     }
-
 }
